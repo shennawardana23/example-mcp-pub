@@ -1,0 +1,90 @@
+version: '3.8'
+
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: devportal-postgres
+    environment:
+      POSTGRES_USER: devportal
+      POSTGRES_PASSWORD: devportal123
+      POSTGRES_DB: devportal
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      - ./migrations:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U devportal"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - devportal-network
+
+  redis:
+    image: redis:7-alpine
+    container_name: devportal-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - devportal-network
+
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: devportal-api
+    ports:
+      - "8080:8080"
+    environment:
+      SERVER_PORT: 8080
+      ENVIRONMENT: development
+      DB_HOST: postgres
+      DB_PORT: 5432
+      DB_USER: devportal
+      DB_PASSWORD: devportal123
+      DB_NAME: devportal
+      DB_SSLMODE: disable
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      JWT_SECRET: your-secret-key-change-in-production-must-be-at-least-32-characters
+      LOG_LEVEL: debug
+      LOG_FORMAT: json
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - devportal-network
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: ./api
+      dockerfile: Dockerfile
+    container_name: devportal-frontend
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:8080
+    depends_on:
+      - api
+    networks:
+      - devportal-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  redis_data:
+
+networks:
+  devportal-network:
+    driver: bridge
