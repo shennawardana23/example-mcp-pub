@@ -1,0 +1,58 @@
+# Binaries for programs and plugins
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binary, built with `go test -c`
+*.test
+
+# Output of the go coverage tool
+*.out
+
+# Dependency directories
+vendor/
+
+# Go workspace file
+go.work
+
+# Air hot reload
+tmp/
+build-errors.log
+
+# Build artifacts
+devportal-api
+devportal-api_unix
+example-mcp-pub
+example-mcp-pub_unix
+
+# Coverage reports
+coverage.out
+coverage.html
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Frontend
+api/node_modules/
+api/dist/
+api/.vite/
+api/package-lock.json
+
+# IDEs
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+logs/
